@@ -1,5 +1,4 @@
 import kaggle
-import pandas as pd
 import zipfile
 
 kaggle.api.authenticate()
@@ -11,6 +10,6 @@ with zipfile.ZipFile(
 ) as zip_ref:
     zip_ref.extractall(".")
 
-movies = pd.read_csv("imdb_top_1000.csv")
-print(movies.columns)
-print(movies[["Series_Title", "Overview"]].head(10))
+#movies = pd.read_csv("imdb_top_1000.csv")
+#print(movies.columns)
+#print(movies[["Series_Title", "Overview"]].head(10))
