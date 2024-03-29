@@ -14,3 +14,4 @@ st.write("""
 st.text_input("Search",key="search",label_visibility="hidden")
 value = st.session_state.search
 print("Value:",value)
+
