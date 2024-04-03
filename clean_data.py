@@ -24,8 +24,8 @@ lemmatizer = WordNetLemmatizer()
 
 # Read the data from csv and clean data
 def readData():
-    movies = pd.read_csv("imdb_top_1000.csv")
-    movies = movies[["Series_Title", "Overview", "Genre", "IMDB_Rating"]].copy()
+    moviesOriginal = pd.read_csv("imdb_top_1000.csv")
+    movies = moviesOriginal[["Series_Title", "Overview", "Genre", "IMDB_Rating"]].copy()
 
     # Convert to lower case
     movies["Series_Title"] = convert_to_lowercase(movies["Series_Title"])
@@ -52,8 +52,9 @@ def readData():
     movies["Overview"] = remove_extra_spaces(movies["Overview"])
     movies["Genre"] = remove_extra_spaces(movies["Genre"])
 
-    movies["moviedata"] = movies["Series_Title"] + " " + movies["Overview"]+ " " + movies["Genre"]+ " " + movies["IMDB_Rating"].astype(str)
-    print(movies.loc[0,"moviedata"])
+    moviesOriginal["moviedata"] = movies["Series_Title"] + " " + movies["Overview"]+ " " + movies["Genre"]+ " " + movies["IMDB_Rating"].astype(str)
+    #print(movies.loc[0,"moviedata"])
+    return moviesOriginal
 
 # Convert to lowercase
 def convert_to_lowercase(df):

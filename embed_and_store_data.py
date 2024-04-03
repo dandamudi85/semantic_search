@@ -1,3 +1,8 @@
+import elasticsearch
+from clean_data import readData
+from elasticsearch import Elasticsearch
+from sentence_transformers import SentenceTransformer
+
 """
 - Prepare the text to embed for each reccord of your dataset.
     - Create the reccord.
@@ -8,22 +13,70 @@
 - Store the embeddings in a vector database (i.e. elasticsearch).
 """
 
-from sentence_transformers import SentenceTransformer
-#msmarco-MiniLM-L-6-v3 for Aysmmetric Semantic Search
-model = SentenceTransformer("msmarco-MiniLM-L-6-v3")
+def elasticSearch():
+    esClient = Elasticsearch("http://localhost:9200")
+    print(esClient.info().body)
+    getIndex(esClient)
+    return esClient
 
-# Our sentences to encode
-sentences = [
-    "This framework generates embeddings for each input sentence",
-    "Sentences are passed as a list of string.",
-    "The quick brown fox jumps over the lazy dog."
-]
+def createIndex(esClient):
+    mappings = {
+        "properties": {
+            "moviedata": {"type": "text"},
+            "Series_Title": {"type": "text"},
+            "Overview" :  {"type": "text"},
+            "Genre" : {"type": "text"},
+            "IMDB_Rating" : {"type": "text"},
+            "moviedata_embeddings": {
+                "type": "dense_vector",
+                "dims": 768,
+                "index": True,
+            },
+        }
+    }
+    print(esClient.indices.create(index="movie_index",mappings=mappings))
 
-# Sentences are encoded by calling model.encode()
-embeddings = model.encode(sentences)
+def getIndex(esClient):
+    try:
+        response = esClient.indices.get(index="movie_index")
+        print("Index response:",response)
+    except(elasticsearch.NotFoundError):
+        createIndex(esClient)
+
 
 # Print the embeddings
-for sentence, embedding in zip(sentences, embeddings):
-    print("Sentence:", sentence)
-    print("Embedding:", embedding)
-    print("")
+def printEmbeddings(sentences,embeddings):
+    for sentence, embedding in zip(sentences, embeddings):
+        print("Sentence:", sentence)
+        print("Embedding:", embedding)
+        print("")
+
+def storeEmbeddings(sentences,embeddings,esClient):
+    for i, row in sentences.iterrows():
+        #print(row)
+        doc = {
+            "moviedata" : row["moviedata"],
+            "Series_Title": row["Series_Title"],
+            "Overview": row["Overview"],
+            "Genre": row["Genre"],
+            "IMDB_Rating": row["IMDB_Rating"],
+            "moviedata_embeddings" : embeddings[i]
+        }
+        #print(doc)
+        esClient.index(index="moviedata_index",id=i,document=doc)
+
+
+# Our sentences to encode
+def encodeSentences():
+    sentences = readData()
+    #print(sentences)
+    # Sentences are encoded by calling model.encode()
+    model = SentenceTransformer("all-mpnet-base-v2")
+    embeddings = model.encode(sentences["moviedata"])
+    esClient = elasticSearch()
+    #printEmbeddings(sentences,embeddings)
+    #Store the embeddings in Elastic CLient
+    storeEmbeddings(sentences,embeddings,esClient)
+    esClient.close()
+
+encodeSentences()
