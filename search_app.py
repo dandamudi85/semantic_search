@@ -8,6 +8,7 @@
 """
 import streamlit as st
 import pandas as pd
+import time
 import string
 import re
 from nltk.stem import WordNetLemmatizer
@@ -28,7 +29,7 @@ def elasticSearch():
     return esClient
 
 def embedQuery(query):
-    model = SentenceTransformer("all-mpnet-base-v2")
+    model = SentenceTransformer("sentence-transformers/msmarco-MiniLM-L-6-v3")
     embedding = model.encode(preProcessQuery(query))
     return embedding
 
@@ -43,45 +44,36 @@ def preProcessQuery(query):
 
 def searchES(esClient,value):
     try:
-        esQuery= {
-                "script_score": {
-                    "query": {
-                    "match_all": {}
-                },
-                "script": {
-                    "source": "cosineSimilarity(params.query_vector, 'moviedata_embeddings') + 1.0",
-                    "params": {
-                        "query_vector": value
-                        }
-                    }
-                }
-        }
-        response = esClient.search(index="moviedata_index", body = {"size":10,"query":esQuery, "_source":["Series_Title","Overview","Genre","IMDB_Rating"]})
+        response = esClient.search(index="moviedata_index",knn={"field": "moviedata_embeddings", "query_vector": value, "k": 10, "num_candidates": 100})
         print(response)
         response = response["hits"]["hits"]
-        #result = pd.DataFrame(columns = ['Movie', 'Overview','Genre','IMBD Rating'])
-        list = []
+        dataList = []
         for hit in response:
-            list.append({"Movie":hit["_source"]["Series_Title"],"Overview":hit["_source"]["Overview"],"Genre":hit["_source"]["Genre"],"IMBD Rating":str(hit["_source"]["IMDB_Rating"])})
-        result = pd.DataFrame(list)
+            dataList.append({"Movie":hit["_source"]["Series_Title"], "Overview":hit["_source"]["Overview"], "Genre":hit["_source"]["Genre"], "IMBD Rating":str(hit["_source"]["IMDB_Rating"])})
+        result = pd.DataFrame(dataList)
         print("Result",result)
         return result
     except Exception as e:
         print("Error while querying ES")
         print(e)
 
-
 def streamlitDisplay():
     st.write("""
     # Movie Search
     """)
-    st.text_input("Search", key="search", label_visibility="hidden")
+    st.text_input("Search", key="search", label_visibility="hidden",placeholder="Search using Movie Title, Overview, Genre")
     if(st.session_state.search != ""):
         value = st.session_state.search
         print("Value:", value)
         esClient = elasticSearch()
+        st.title("Search Results")
         result = searchES(esClient,embedQuery(value))
+        with st.spinner('Just a moment...'):
+            time.sleep(3)
         st.table(result)
+        # st.title("Lexical Search")
+        # lexicalResult = searchESLexical(esClient,value)
+        # st.table(lexicalResult)
 
 
 streamlitDisplay()

@@ -8,9 +8,9 @@ from nltk.stem import WordNetLemmatizer
 # Clean your columns
 "convert to lower case", "remove puncutations", "expand contractions", "stemming", "lemmatization", "remove extra space"
 # Concatenate the columns needed for your embedding
-"Series_Title", "Overview,Genre", "IMDB_Rating"
+"Series_Title", "Overview","Genre", "IMDB_Rating"
 # Create new column with concatenated and clean text
-"Series_Title", "Overview_Genre", "IMDB_Rating"
+"Series_Title_Overview_Genre_IMDB_Rating"
 
 contraction_mapping = {
     "dont": "do not",

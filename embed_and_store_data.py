@@ -29,7 +29,7 @@ def createIndex(esClient):
             "IMDB_Rating" : {"type": "text"},
             "moviedata_embeddings": {
                 "type": "dense_vector",
-                "dims": 768,
+                "dims": 384,
                 "index": True,
             },
         }
@@ -71,12 +71,13 @@ def encodeSentences():
     sentences = readData()
     #print(sentences)
     # Sentences are encoded by calling model.encode()
-    model = SentenceTransformer("all-mpnet-base-v2")
+    model = SentenceTransformer("sentence-transformers/msmarco-MiniLM-L-6-v3")
     embeddings = model.encode(sentences["moviedata"])
     esClient = elasticSearch()
     #printEmbeddings(sentences,embeddings)
     #Store the embeddings in Elastic CLient
     storeEmbeddings(sentences,embeddings,esClient)
+    print("Storing Embeddings in Elastic Search Completed")
     esClient.close()
 
 encodeSentences()
