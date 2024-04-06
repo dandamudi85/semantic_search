@@ -8,7 +8,6 @@
 """
 import streamlit as st
 import pandas as pd
-import time
 import string
 import re
 from nltk.stem import WordNetLemmatizer
@@ -29,7 +28,7 @@ def elasticSearch():
     return esClient
 
 def embedQuery(query):
-    model = SentenceTransformer("sentence-transformers/msmarco-MiniLM-L-6-v3")
+    model = SentenceTransformer("msmarco-MiniLM-L6-cos-v5")
     embedding = model.encode(preProcessQuery(query))
     return embedding
 
@@ -44,9 +43,10 @@ def preProcessQuery(query):
 
 def searchES(esClient,value):
     try:
-        response = esClient.search(index="moviedata_index",knn={"field": "moviedata_embeddings", "query_vector": value, "k": 10, "num_candidates": 100})
+        response = esClient.search(index="moviedata_index",knn={"field": "moviedata_embeddings", "query_vector": value, "k": 30, "num_candidates": 100},size=30)
         print(response)
         response = response["hits"]["hits"]
+        print("Response Size:",len(response))
         dataList = []
         for hit in response:
             dataList.append({"Movie":hit["_source"]["Series_Title"], "Overview":hit["_source"]["Overview"], "Genre":hit["_source"]["Genre"], "IMBD Rating":str(hit["_source"]["IMDB_Rating"])})
@@ -66,10 +66,8 @@ def streamlitDisplay():
         value = st.session_state.search
         print("Value:", value)
         esClient = elasticSearch()
-        st.title("Search Results")
         result = searchES(esClient,embedQuery(value))
-        with st.spinner('Just a moment...'):
-            time.sleep(3)
+        st.title("Search Results")
         st.table(result)
         # st.title("Lexical Search")
         # lexicalResult = searchESLexical(esClient,value)

@@ -71,7 +71,7 @@ def encodeSentences():
     sentences = readData()
     #print(sentences)
     # Sentences are encoded by calling model.encode()
-    model = SentenceTransformer("sentence-transformers/msmarco-MiniLM-L-6-v3")
+    model = SentenceTransformer("msmarco-MiniLM-L6-cos-v5")
     embeddings = model.encode(sentences["moviedata"])
     esClient = elasticSearch()
     #printEmbeddings(sentences,embeddings)

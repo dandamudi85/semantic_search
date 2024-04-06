@@ -52,7 +52,8 @@ def readData():
     movies["Overview"] = remove_extra_spaces(movies["Overview"])
     movies["Genre"] = remove_extra_spaces(movies["Genre"])
 
-    moviesOriginal["moviedata"] = movies["Series_Title"] + " " + movies["Overview"]+ " " + movies["Genre"]+ " " + movies["IMDB_Rating"].astype(str)
+
+    moviesOriginal["moviedata"] = "The movie title is " + movies["Series_Title"] + ". An overview of the movie is as follows " + movies["Overview"]+ " and the genre of the movie is " + movies["Genre"] + " and the movie has an imdb rating of " +movies["IMDB_Rating"].astype(str)
     #print(movies.loc[0,"moviedata"])
     return moviesOriginal
 
@@ -86,6 +87,5 @@ def lemmatization(df):
 def remove_extra_spaces(df):
     df = df.map(lambda x: " ".join([re.sub(r'\s{2,}', ' ', re.sub(r'\s+', ' ', word)).strip() for word in x.split()]))
     return df
-
 
 readData()
