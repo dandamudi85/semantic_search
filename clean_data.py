@@ -87,5 +87,3 @@ def lemmatization(df):
 def remove_extra_spaces(df):
     df = df.map(lambda x: " ".join([re.sub(r'\s{2,}', ' ', re.sub(r'\s+', ' ', word)).strip() for word in x.split()]))
     return df
-
-readData()

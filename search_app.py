@@ -44,9 +44,9 @@ def preProcessQuery(query):
 def searchES(esClient,value):
     try:
         response = esClient.search(index="moviedata_index",knn={"field": "moviedata_embeddings", "query_vector": value, "k": 30, "num_candidates": 100},size=30)
-        print(response)
+        #print(response)
         response = response["hits"]["hits"]
-        print("Response Size:",len(response))
+        #print("Response Size:",len(response))
         dataList = []
         for hit in response:
             dataList.append({"Movie":hit["_source"]["Series_Title"], "Overview":hit["_source"]["Overview"], "Genre":hit["_source"]["Genre"], "IMBD Rating":str(hit["_source"]["IMDB_Rating"])})
